@@ -1,4 +1,4 @@
-module efind
+module github.com/llightos/efind
 
 go 1.18
 
