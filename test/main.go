@@ -1,9 +1,9 @@
 package main
 
 import (
-	"efind"
 	"flag"
 	"fmt"
+	"github.com/llightos/efind"
 	"log"
 	"time"
 )

@@ -13,7 +13,7 @@ type EWatcher struct {
 
 // newWatcher 新建一个watcher 监视值的使用，返回的c应该作为父级节点，
 // 如果调用此方法的位置监视到wChan的改变，会向wChan发送
-func (ec *EClient) newWatcher(ew *EWatcher, ctx context.Context, err error) {
+func (ec *EClient) newWatcher(ew *EWatcher, ctx context.Context) {
 	ew = &EWatcher{}
 	ew.EClient = ec
 	ew.wChan = ew.cli.Watch(ctx, ec.serverName, clientv3.WithPrefix())

@@ -2,6 +2,8 @@ package efind
 
 import (
 	"context"
+	"fmt"
+	"github.com/spf13/viper"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
 	"time"
@@ -21,10 +23,10 @@ type Config struct {
 	//EleName string
 }
 
-// 返回的kv
+// ResKV 返回的kv
 type ResKV struct {
-	key string
-	val string
+	Key string
+	Val string
 }
 
 func NewClient(config Config) *EClient {
@@ -54,8 +56,8 @@ func (ec *EClient) MatchAll(serverName string) (kv []ResKV, err error) {
 	//var kv []ResKV
 	for _, v := range res.Kvs {
 		kv = append(kv, ResKV{
-			key: string(v.Key),
-			val: string(v.Value),
+			Key: string(v.Key),
+			Val: string(v.Value),
 		})
 	}
 	return
@@ -68,7 +70,36 @@ func (ec *EClient) MatchAServer(serverName string) (kv ResKV, err error) {
 		return kv, err
 	}
 	return ResKV{
-		key: string(res.Kvs[0].Key),
-		val: string(res.Kvs[0].Value),
+		Key: string(res.Kvs[0].Key),
+		Val: string(res.Kvs[0].Value),
 	}, nil
+}
+
+//ReadConfig 实现了通过文件路径编写config文件配置,读到文件位置即可
+func ReadConfig(pwd string) *EClient {
+	viper.SetConfigName("config") // name of config file (without extension)
+	viper.SetConfigType("yaml")   // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath(pwd)      // path to look for the config file in
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Panicln(err)
+	}
+	serverName := viper.GetString("etcd.serverName")
+	etcdAddr := viper.GetString("etcd.etcdAddr")
+	ttl := viper.GetInt("etcd.ttl")
+	ec := new(EClient)
+	ec.Config = new(Config)
+	ec.serverName = serverName
+	ec.EtcdAddr = etcdAddr
+	ec.TTL = ttl
+
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{etcdAddr},
+		DialTimeout: time.Duration(int64(ttl)) * time.Second,
+	})
+
+	ec.cli = client
+
+	fmt.Println("etcd.serverName", serverName)
+	return ec
 }
