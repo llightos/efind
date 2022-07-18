@@ -1,0 +1,4 @@
+etcd :
+  serverName : jingdong/server
+  etcdAddr : 127.0.0.1:2379
+  ttl : 5
